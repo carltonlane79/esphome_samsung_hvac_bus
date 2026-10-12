@@ -1,0 +1,972 @@
+# Samsung EHS Mono (AE120BXYDEG) on upstream samsung_ac. Custom sensors receive raw NASA values; filters do the scaling.
+esphome:
+  name: esphome-web-fd4e7c
+  friendly_name: samsung_heatpump
+  comment: Samsung AC Heatpump
+  min_version: 2024.11.0
+  name_add_mac_suffix: false
+esp32:
+  board: m5stack-atom
+  framework:
+    type: esp-idf
+web_server:
+  port: 80
+logger:
+  level: DEBUG
+api: null
+ota:
+  platform: esphome
+wifi:
+  ssid: !secret 'wifi_ssid'
+  password: !secret 'wifi_password'
+  manual_ip:
+    static_ip: 192.168.2.234
+    gateway: 192.168.2.1
+    subnet: 255.255.255.0
+captive_portal: null
+uart:
+  id: uart_bus
+  tx_pin: GPIO19
+  rx_pin: GPIO22
+  baud_rate: 9600
+  parity: EVEN
+external_components:
+- source: ./components
+  components:
+  - samsung_ac
+samsung_ac:
+  id: samsung_ac_controller
+  uart_id: uart_bus
+  debug_log_undefined_messages: true
+  debug_log_messages: true
+  capabilities:
+    vertical_swing: false
+    horizontal_swing: false
+  devices:
+  - address: 20.00.00
+    capabilities:
+      horizontal_swing: false
+      vertical_swing: false
+    climate:
+      name: Heat Pump climate
+      id: climate_20_00_00
+    room_temperature:
+      name: Indoor Temperature
+      id: room_temperature_20_00_00
+      accuracy_decimals: 1
+    target_temperature:
+      name: Heat Pump target temperature
+      id: target_temperature_20_00_00
+    power:
+      name: Heat Pump power
+      id: power_20_00_00
+    mode:
+      name: Heat Pump mode
+      id: mode_20_00_00
+    indoor_eva_in_temperature:
+      name: Evaporator Inlet Water Temperature
+      id: evap_inlet_water_temperature_20_00_00
+      accuracy_decimals: 1
+    indoor_eva_out_temperature:
+      name: Evaporator Outlet Water Temperature
+      id: evap_outlet_water_temperature_20_00_00
+      accuracy_decimals: 1
+    custom_sensor:
+    - name: Operation Mode
+      message: 0x4001
+      id: operation_mode_20_00_00
+      internal: true
+    - name: Water Temperature (Heating Loop)
+      message: 0x4236
+      id: water_temperature_20_00_00
+      unit_of_measurement: °C
+      accuracy_decimals: 1
+      device_class: temperature
+      state_class: measurement
+      filters:
+      - lambda: return (int16_t)x;
+      - multiply: 0.1
+    - name: Water Outlet Target Temperature
+      message: 0x4247
+      id: water_outlet_target_temperature_20_00_00
+      unit_of_measurement: °C
+      accuracy_decimals: 1
+      filters:
+      - lambda: return (int16_t)x;
+      - multiply: 0.1
+    - name: DHW Operation Enable
+      message: 0x4065
+      id: dhw_operation_enable
+      internal: true
+    - name: DHW Mode Setting
+      message: 0x4066
+      id: dhw_mode_setting
+      internal: true
+    - name: DHW Target Temperature
+      message: 0x4235
+      unit_of_measurement: °C
+      accuracy_decimals: 1
+      device_class: temperature
+      state_class: measurement
+      id: dhw_setpoint_temp
+      filters:
+      - lambda: return (int16_t)x;
+      - multiply: 0.1
+    - name: Backup Heater Status
+      message: 0x406C
+      id: dhw_backup_heater_status
+      internal: true
+    - name: Booster Heater Status
+      message: 0x4087
+      id: dhw_booster_heater_status
+      internal: true
+    - name: 3-Way Valve Position
+      message: 0x4067
+      id: dhw_three_way_valve_position
+      internal: true
+    - name: Circulation Pump Speed
+      message: 0x40C4
+      unit_of_measurement: '%'
+      id: dhw_circulation_pump_speed
+    - name: Water Out Temperature
+      message: 0x4238
+      unit_of_measurement: °C
+      accuracy_decimals: 1
+      device_class: temperature
+      state_class: measurement
+      id: water_out_temp_4238
+      filters:
+      - lambda: return (int16_t)x;
+      - multiply: 0.1
+    - name: Heater Out Temperature
+      message: 0x4239
+      unit_of_measurement: °C
+      accuracy_decimals: 1
+      device_class: temperature
+      state_class: measurement
+      id: water_out2_temp_4239
+      filters:
+      - lambda: return (int16_t)x;
+      - multiply: 0.1
+    - name: DHW Tank Temperature
+      message: 0x4237
+      id: dhw_tank_temperature_20_00_00
+      unit_of_measurement: °C
+      accuracy_decimals: 1
+      device_class: temperature
+      state_class: measurement
+      filters:
+      - lambda: return (int16_t)x;
+      - multiply: 0.1
+    - name: Water Flow Rate
+      message: 0x42E9
+      id: water_flow_rate_20_00_00
+      unit_of_measurement: L/min
+      accuracy_decimals: 1
+      filters:
+      - multiply: 0.1
+    - name: Zone 2 Room Setpoint
+      message: 0x42D6
+      id: zone2_room_setpoint_20_00_00
+      unit_of_measurement: °C
+      accuracy_decimals: 1
+      filters:
+      - lambda: return (int16_t)x;
+      - multiply: 0.1
+    - name: Zone 2 Water Setpoint
+      message: 0x42D7
+      id: zone2_water_setpoint_20_00_00
+      unit_of_measurement: °C
+      accuracy_decimals: 1
+      filters:
+      - lambda: return (int16_t)x;
+      - multiply: 0.1
+    - name: Water Outlet Zone 1
+      message: 0x42D8
+      id: water_outlet_zone1_20_00_00
+      unit_of_measurement: °C
+      accuracy_decimals: 1
+      filters:
+      - lambda: return (int16_t)x;
+      - multiply: 0.1
+    - name: Water Outlet Zone 2
+      message: 0x42D9
+      id: water_outlet_zone2_20_00_00
+      unit_of_measurement: °C
+      accuracy_decimals: 1
+      filters:
+      - lambda: return (int16_t)x;
+      - multiply: 0.1
+    - name: Flow Rate Control %
+      message: 0x42F1
+      id: flow_rate_control_20_00_00
+      unit_of_measurement: '%'
+    - name: Water Law Target Temperature
+      message: 0x427F
+      id: water_law_target_temperature_20_00_00
+      unit_of_measurement: °C
+      accuracy_decimals: 1
+      device_class: temperature
+      state_class: measurement
+      filters:
+      - lambda: return (int16_t)x;
+      - multiply: 0.1
+    - name: Indoor Thermal Energy Total
+      message: 0x4427
+      id: total_energy_produced_20_00_00
+      unit_of_measurement: kWh
+      accuracy_decimals: 3
+      device_class: energy
+      state_class: total_increasing
+      icon: mdi:counter
+      filters:
+      - multiply: 0.001
+    - name: Water Return Temperature
+      message: 0x4236
+      id: water_return_temp_20_00_00
+      unit_of_measurement: °C
+      accuracy_decimals: 1
+      device_class: temperature
+      state_class: measurement
+      filters:
+      - lambda: return (int16_t)x;
+      - multiply: 0.1
+    - name: Indoor Unit Capacity
+      message: 0x4212
+      id: outdoor_ambient_controller_20_00_00
+      unit_of_measurement: kW
+      accuracy_decimals: 2
+      state_class: measurement
+      filters:
+      - multiply: 0.11628
+    - name: Indoor Model Info
+      message: 0x4229
+      id: phe_inlet_temp_20_00_00
+      unit_of_measurement: ''
+      accuracy_decimals: 0
+      internal: true
+    - name: Minutes Since Installation
+      message: 0x4423
+      id: minutes_since_installation_20_00_00
+      unit_of_measurement: min
+      state_class: total_increasing
+      icon: mdi:calendar-clock
+      entity_category: diagnostic
+    - name: Indoor Active Hours
+      message: 0x4424
+      id: indoor_active_hours_20_00_00
+      unit_of_measurement: h
+      accuracy_decimals: 1
+      state_class: total_increasing
+      icon: mdi:clock-outline
+      filters:
+      - multiply: 0.016666666666666666
+    - name: Heat Output
+      message: 0x4426
+      id: heat_output_20_00_00
+      unit_of_measurement: W
+      device_class: power
+      state_class: measurement
+      accuracy_decimals: 0
+      icon: mdi:fire
+  - address: 10.00.00
+    capabilities:
+      horizontal_swing: false
+      vertical_swing: false
+    outdoor_temperature:
+      name: Outdoor Temperature
+      icon: mdi:thermometer
+      device_class: temperature
+      state_class: measurement
+      unit_of_measurement: °C
+      accuracy_decimals: 1
+      id: outdoor_temperature_10_00_00
+    outdoor_current:
+      name: Outdoor Current
+      icon: mdi:current-ac
+      device_class: current
+      state_class: measurement
+      unit_of_measurement: A
+      accuracy_decimals: 1
+      id: outdoor_current_10_00_00
+    power:
+      name: Outdoor Power
+      icon: mdi:flash
+      id: power_10_00_00
+    error_code:
+      name: Error Code
+      icon: mdi:alert-circle
+      id: error_code_10_00_00
+      message: 0x8235
+    custom_sensor:
+    - name: Fan Power
+      id: fan_power_10_00_00
+      message: 0x8239
+    - name: Total Power
+      id: total_power_10_00_00
+      message: 0x823D
+    - name: Phase Current
+      id: phase_current_10_00_00
+      message: 0x82DB
+    - name: DC Bus Voltage
+      id: phase_voltage_10_00_00
+      message: 0x82DE
+      unit_of_measurement: V
+    - name: Phase Power
+      id: phase_power_10_00_00
+      message: 0x82DF
+    - name: MCU HR Bypass EEV
+      id: power_factor_10_00_00
+      message: 0x82E8
+      unit_of_measurement: steps
+      filters:
+      - multiply: 0.001
+    - name: Unknown 82ED
+      id: unknown_82ed_10_00_00
+      message: 0x82ED
+      accuracy_decimals: 2
+      entity_category: diagnostic
+      filters:
+      - multiply: 0.01
+    - name: System Capacity
+      id: system_capacity_10_00_00
+      message: 0x82F6
+      unit_of_measurement: kW
+      accuracy_decimals: 1
+      filters:
+      - multiply: 0.1
+    - name: Compressor Hours
+      id: compressor_hours_10_00_00
+      message: 0x840C
+      unit_of_measurement: h
+      accuracy_decimals: 1
+      state_class: total_increasing
+      icon: mdi:clock-outline
+      internal: true
+    - name: Fan Hours
+      id: fan_hours_10_00_00
+      message: 0x841A
+      unit_of_measurement: h
+      accuracy_decimals: 1
+      state_class: total_increasing
+      icon: mdi:clock-outline
+      internal: true
+    - name: ODU Instantaneous Power
+      id: control_wattmeter_unit_10_00_00
+      message: 0x8411
+      unit_of_measurement: W
+      device_class: power
+      state_class: measurement
+      accuracy_decimals: 0
+      icon: mdi:flash
+    - name: Wattmeter Accumulated
+      id: wattmeter_accumulated_10_00_00
+      message: 0x8416
+      unit_of_measurement: kWh
+      accuracy_decimals: 3
+      device_class: energy
+      state_class: total_increasing
+      icon: mdi:counter
+      filters:
+      - multiply: 0.001
+    - name: Operation Hours
+      message: 0x8287
+      id: operation_hours_10_00_00
+      unit_of_measurement: h
+      accuracy_decimals: 1
+      state_class: total_increasing
+      icon: mdi:clock-outline
+    - name: Compressor Ordered Frequency
+      message: 0x8236
+      id: compressor_ordered_freq_10_00_00
+      unit_of_measurement: Hz
+      accuracy_decimals: 0
+      state_class: measurement
+      icon: mdi:sine-wave
+    - name: Compressor Target Frequency
+      message: 0x8237
+      id: compressor_target_freq_10_00_00
+      unit_of_measurement: Hz
+      accuracy_decimals: 0
+      state_class: measurement
+      icon: mdi:sine-wave
+    - name: Compressor Actual Frequency
+      message: 0x8238
+      id: compressor_actual_freq_10_00_00
+      unit_of_measurement: Hz
+      accuracy_decimals: 0
+      state_class: measurement
+      icon: mdi:sine-wave
+    - name: Outdoor Air Sensor (Airout)
+      message: 0x8204
+      id: outdoor_air_sensor_10_00_00
+      unit_of_measurement: °C
+      filters:
+      - lambda: return (int16_t)x;
+      - multiply: 0.1
+    - name: Defrost Mode
+      id: defrost_mode_10_00_00
+      message: 0x8031
+      icon: mdi:snowflake-melt
+      unit_of_measurement: mode
+      internal: true
+    - name: Produced Energy Actual
+      id: produced_energy_actual_10_00_00
+      message: 0x8426
+      unit_of_measurement: kWh
+      accuracy_decimals: 3
+      device_class: energy
+      state_class: total_increasing
+      icon: mdi:counter
+      filters:
+      - multiply: 0.001
+    - name: Unknown 8404 Counter
+      message: 0x8404
+      id: unknown_8404_10_00_00
+      entity_category: diagnostic
+      internal: false
+    - name: Operation Mode
+      message: 0x8001
+      id: operation_mode_10_00_00
+      unit_of_measurement: enum
+      internal: true
+    - name: Heat/Cool Mode
+      message: 0x8003
+      id: heat_cool_mode_10_00_00
+      unit_of_measurement: enum
+      internal: true
+    - name: Compressor 1 Runtime
+      message: 0x8405
+      id: compressor_1_runtime_10_00_00
+      unit_of_measurement: h
+      accuracy_decimals: 0
+      state_class: total_increasing
+      icon: mdi:clock-outline
+    - name: Daily Operation Time
+      message: 0x8417
+      id: daily_operation_time_10_00_00
+      unit_of_measurement: h
+      accuracy_decimals: 0
+      state_class: measurement
+      icon: mdi:clock-outline
+    - name: Unknown 8409
+      message: 0x8409
+      id: daily_energy_consumption_10_00_00
+      unit_of_measurement: kWh
+      accuracy_decimals: 1
+      device_class: energy
+      state_class: measurement
+      icon: mdi:lightning-bolt
+      internal: true
+    - name: Deice Stage
+      message: 0x8061
+      id: deice_stage_10_00_00
+      unit_of_measurement: stage
+      icon: mdi:snowflake
+      internal: true
+    - name: Operating Stage
+      message: 0x8063
+      id: operating_stage_10_00_00
+      unit_of_measurement: enum
+      icon: mdi:state-machine
+      internal: true
+    - name: Fan Step
+      message: 0x823C
+      id: fan_step_10_00_00
+      unit_of_measurement: step
+      accuracy_decimals: 0
+      icon: mdi:fan
+    - name: Inverter Status
+      message: 0x8202
+      id: inverter_status_10_00_00
+      unit_of_measurement: enum
+      icon: mdi:sine-wave
+      internal: true
+    - name: Operating Flag AA
+      message: 0x80AA
+      id: operating_flag_aa_10_00_00
+      unit_of_measurement: flag
+      icon: mdi:flag
+    - name: Operating Flag B6
+      message: 0x80B6
+      id: operating_flag_b6_10_00_00
+      unit_of_measurement: flag
+      icon: mdi:flag
+    - name: Operating Flag D8
+      message: 0x80D8
+      id: operating_flag_d8_10_00_00
+      unit_of_measurement: flag
+      icon: mdi:flag
+    - name: Compressor Running Status
+      message: 0x8010
+      id: compressor_running_status_10_00_00
+      unit_of_measurement: bool
+      internal: true
+    - name: Hot Gas Valve Status
+      message: 0x8017
+      id: hot_gas_valve_status_10_00_00
+      unit_of_measurement: bool
+      internal: true
+    - name: Liquid Line Valve Status
+      message: 0x8019
+      id: liquid_line_valve_status_10_00_00
+      unit_of_measurement: bool
+      internal: true
+    - name: 4-Way Reversing Valve Status
+      message: 0x801A
+      id: four_way_reversing_valve_status_10_00_00
+      unit_of_measurement: bool
+      internal: true
+    - name: EVI Bypass Valve Status
+      message: 0x8021
+      id: evi_bypass_valve_status_10_00_00
+      unit_of_measurement: bool
+      internal: true
+    - name: Base Pan Heater
+      message: 0x80AF
+      id: base_pan_heater_10_00_00
+      unit_of_measurement: bool
+      internal: true
+    - name: PHE Heater
+      message: 0x80D7
+      id: phe_heater_10_00_00
+      unit_of_measurement: bool
+      internal: true
+    - name: High Pressure
+      message: 0x8206
+      id: high_pressure_10_00_00
+      unit_of_measurement: kgf/cm²
+      accuracy_decimals: 1
+      state_class: measurement
+      filters:
+      - multiply: 0.1
+    - name: Low Pressure
+      message: 0x8208
+      id: low_pressure_10_00_00
+      unit_of_measurement: kgf/cm²
+      accuracy_decimals: 1
+      state_class: measurement
+      filters:
+      - multiply: 0.1
+    - name: Discharge Temperature
+      message: 0x820A
+      id: discharge_temperature_10_00_00
+      unit_of_measurement: °C
+      accuracy_decimals: 1
+      device_class: temperature
+      state_class: measurement
+      filters:
+      - lambda: return (int16_t)x;
+      - multiply: 0.1
+    - name: Compressor Current
+      message: 0x8217
+      id: compressor_current_8217_10_00_00
+      unit_of_measurement: A
+      accuracy_decimals: 1
+      device_class: current
+      state_class: measurement
+      filters:
+      - multiply: 0.1
+    - name: Condenser Outlet Temperature
+      message: 0x8218
+      id: condenser_outlet_temp_10_00_00
+      unit_of_measurement: °C
+      accuracy_decimals: 1
+      filters:
+      - lambda: return (int16_t)x;
+      - multiply: 0.1
+    - name: Suction Temperature
+      message: 0x821A
+      id: suction_temperature_10_00_00
+      unit_of_measurement: °C
+      accuracy_decimals: 1
+      device_class: temperature
+      state_class: measurement
+      filters:
+      - lambda: return (int16_t)x;
+      - multiply: 0.1
+    - name: EVI Inlet Temperature
+      message: 0x821E
+      id: evi_inlet_temp_10_00_00
+      unit_of_measurement: °C
+      accuracy_decimals: 1
+      filters:
+      - lambda: return (int16_t)x;
+      - multiply: 0.1
+    - name: EVI Outlet Temperature
+      message: 0x8220
+      id: evi_outlet_temp_10_00_00
+      unit_of_measurement: °C
+      accuracy_decimals: 1
+      filters:
+      - lambda: return (int16_t)x;
+      - multiply: 0.1
+    - name: Outdoor Fan Step
+      message: 0x8226
+      id: outdoor_fan_step_10_00_00
+      unit_of_measurement: step
+    - name: Main EEV Steps
+      message: 0x8229
+      id: main_eev_steps_10_00_00
+      unit_of_measurement: steps
+    - name: DC Link Voltage
+      message: 0x823B
+      id: dc_link_voltage_10_00_00
+      unit_of_measurement: V
+      accuracy_decimals: 0
+    - name: High-Pressure Sat. Temperature
+      message: 0x829F
+      id: high_pressure_sat_temp_10_00_00
+      unit_of_measurement: °C
+      accuracy_decimals: 1
+      device_class: temperature
+      state_class: measurement
+      filters:
+      - lambda: return (int16_t)x;
+      - multiply: 0.1
+    - name: Low-Pressure Sat. Temperature
+      message: 0x82A0
+      id: low_pressure_sat_temp_10_00_00
+      unit_of_measurement: °C
+      accuracy_decimals: 1
+      device_class: temperature
+      state_class: measurement
+      filters:
+      - lambda: return (int16_t)x;
+      - multiply: 0.1
+    - name: All Units Total Power
+      message: 0x8415
+      id: wattmeter_total_sum_10_00_00
+      unit_of_measurement: W
+      device_class: power
+      state_class: measurement
+      accuracy_decimals: 0
+      icon: mdi:flash
+    - name: Produced Energy Total
+      message: 0x8427
+      id: produced_energy_total_8427_10_00_00
+      unit_of_measurement: kWh
+      accuracy_decimals: 3
+      device_class: energy
+      state_class: total_increasing
+      icon: mdi:counter
+      filters:
+      - multiply: 0.001
+    - name: Energy Accumulated
+      message: 0x8414
+      id: energy_accumulated_10_00_00
+      unit_of_measurement: kWh
+      accuracy_decimals: 3
+      device_class: energy
+      state_class: total_increasing
+      icon: mdi:counter
+      filters:
+      - multiply: 0.001
+    - name: Fan Step 2
+      message: 0x8227
+      id: fan_power_8227_10_00_00
+      unit_of_measurement: step
+      accuracy_decimals: 0
+      icon: mdi:fan
+    - name: Outdoor Unit Power
+      message: 0x8413
+      id: outdoor_unit_power_10_00_00
+      unit_of_measurement: W
+      device_class: power
+      state_class: measurement
+      icon: mdi:flash
+    - name: ODU Loading Time
+      message: 0x8228
+      id: total_power_8228_10_00_00
+      unit_of_measurement: ''
+      accuracy_decimals: 0
+      icon: mdi:timer-outline
+    - name: Accumulator824C_unknown
+      message: 0x824C
+      id: power_824c_unknown_10_00_00
+      state_class: total_increasing
+      icon: mdi:counter
+    - name: Power22FC_unknown
+      message: 0x22FC
+      id: power_22fc_unknown_10_00_00
+      unit_of_measurement: W
+      device_class: power
+      state_class: measurement
+      icon: mdi:flash
+    - name: NM Out Sensor Voltage
+      message: 0x24FC
+      id: nm_out_sensor_voltage_10_00_00
+      unit_of_measurement: V
+      accuracy_decimals: 1
+      device_class: voltage
+      state_class: measurement
+      icon: mdi:flash
+      filters:
+      - multiply: 0.1
+    - name: Unknown 8408 Counter
+      message: 0x8408
+      id: unknown_8408_10_00_00
+      entity_category: diagnostic
+text_sensor:
+- platform: template
+  name: Operation Mode
+  id: operation_mode_20_00_00_display
+  lambda: |-
+    if (std::isnan(id(operation_mode_20_00_00).state)) return std::string("--");
+    int value = (int)id(operation_mode_20_00_00).state;
+    switch(value) {
+      case 0: return std::string("Auto");
+      case 1: return std::string("Cool");
+      case 2: return std::string("Dry");
+      case 3: return std::string("Fan");
+      case 4: return std::string("Heat");
+      default: return std::string("Unknown (").append(to_string(value)).append(")");
+    }
+  update_interval: 1s
+- platform: template
+  name: DHW Operation Enable
+  id: dhw_operation_enable_display
+  lambda: |-
+    if (std::isnan(id(dhw_operation_enable).state)) return std::string("--");
+    return id(dhw_operation_enable).state != 0 ? std::string("On") : std::string("Off");
+  update_interval: 1s
+- platform: template
+  name: DHW Mode Setting
+  id: dhw_mode_setting_display
+  lambda: |-
+    if (std::isnan(id(dhw_mode_setting).state)) return std::string("--");
+    int value = (int)id(dhw_mode_setting).state;
+    switch(value) {
+      case 0: return std::string("Eco");
+      case 1: return std::string("Standard");
+      case 2: return std::string("Power");
+      case 3: return std::string("Force");
+      default: return std::string("Unknown (").append(to_string(value)).append(")");
+    }
+  update_interval: 1s
+- platform: template
+  name: 3-Way Valve Position
+  id: dhw_three_way_valve_position_display
+  lambda: |-
+    if (std::isnan(id(dhw_three_way_valve_position).state)) return std::string("--");
+    int value = (int)id(dhw_three_way_valve_position).state;
+    switch(value) {
+      case 0: return std::string("Heating Loop");
+      case 1: return std::string("DHW Loop");
+      default: return std::string("Position ").append(to_string(value));
+    }
+  update_interval: 1s
+- platform: template
+  name: Outdoor Operation Mode
+  id: operation_mode_10_00_00_display
+  lambda: |-
+    if (std::isnan(id(operation_mode_10_00_00).state)) return std::string("--");
+    int value = (int)id(operation_mode_10_00_00).state;
+    switch(value) {
+      case 0:  return std::string("Stop");
+      case 1:  return std::string("Safety");
+      case 2:  return std::string("Normal");
+      case 3:  return std::string("Balance");
+      case 4:  return std::string("Recovery");
+      case 5:  return std::string("Deice");
+      case 6:  return std::string("CompDown");
+      case 7:  return std::string("Prohibit");
+      case 8:  return std::string("LineJig");
+      case 9:  return std::string("PcbJig");
+      case 10: return std::string("Test");
+      case 11: return std::string("Charge");
+      case 12: return std::string("PumpDown");
+      case 13: return std::string("PumpOut");
+      case 14: return std::string("Vacuum");
+      case 15: return std::string("CaloryJig");
+      case 16: return std::string("PumpDownStop");
+      case 17: return std::string("SubStop");
+      case 18: return std::string("CheckPipe");
+      case 19: return std::string("CheckRef");
+      case 20: return std::string("FptJig");
+      case 21: return std::string("NonstopHeatCoolChange");
+      case 22: return std::string("AutoInspect");
+      case 23: return std::string("ElectricDischarge");
+      case 24: return std::string("SplitDeice");
+      case 25: return std::string("InverterCheck");
+      case 26: return std::string("NonstopDeice");
+      case 27: return std::string("RemTest");
+      case 28: return std::string("Rating");
+      case 29: return std::string("PcTest");
+      case 30: return std::string("PumpDownThermoOff");
+      case 31: return std::string("3PhaseTest");
+      case 32: return std::string("SmartInstallTest");
+      case 33: return std::string("DeicePerformanceTest");
+      case 34: return std::string("InverterFanPbaCheck");
+      case 35: return std::string("AutoPipePairing");
+      case 36: return std::string("AutoCharge");
+      default: return std::string("Unknown (").append(to_string(value)).append(")");
+    }
+  update_interval: 1s
+- platform: template
+  name: Heat/Cool Mode
+  id: heat_cool_mode_10_00_00_display
+  lambda: |-
+    if (std::isnan(id(heat_cool_mode_10_00_00).state)) return std::string("--");
+    int value = (int)id(heat_cool_mode_10_00_00).state;
+    switch(value) {
+      case 0: return std::string("Undefined");
+      case 1: return std::string("Cool");
+      case 2: return std::string("Heat");
+      case 3: return std::string("Cool (Main)");
+      case 4: return std::string("Heat (Main)");
+      default: return std::string("Unknown (").append(to_string(value)).append(")");
+    }
+  update_interval: 1s
+- platform: template
+  name: Defrost Mode
+  id: defrost_mode_10_00_00_display
+  lambda: |-
+    if (std::isnan(id(defrost_mode_10_00_00).state)) return std::string("--");
+    int value = (int)id(defrost_mode_10_00_00).state;
+    switch(value) {
+      case 0: return std::string("Off");
+      case 1: return std::string("Defrosting");
+      case 2: return std::string("Preheat");
+      default: return std::string("Unknown (").append(to_string(value)).append(")");
+    }
+  update_interval: 1s
+- platform: template
+  name: Deice Stage
+  id: deice_stage_10_00_00_display
+  lambda: |-
+    if (std::isnan(id(deice_stage_10_00_00).state)) return std::string("--");
+    int value = (int)id(deice_stage_10_00_00).state;
+    if (value == 255 || value == 0) return std::string("None");
+    return std::string("Stage ").append(to_string(value));
+  update_interval: 1s
+- platform: template
+  name: Operating Stage
+  id: operating_stage_10_00_00_display
+  lambda: |-
+    if (std::isnan(id(operating_stage_10_00_00).state)) return std::string("--");
+    int value = (int)id(operating_stage_10_00_00).state;
+    switch(value) {
+      case 0: return std::string("Stop");
+      case 1: return std::string("Running");
+      case 2: return std::string("Pre-Start");
+      case 3: return std::string("Recovery");
+      case 4: return std::string("Standby");
+      default: return std::string("Unknown (").append(to_string(value)).append(")");
+    }
+  update_interval: 1s
+- platform: template
+  name: Inverter Status
+  id: inverter_status_10_00_00_display
+  lambda: |-
+    if (std::isnan(id(inverter_status_10_00_00).state)) return std::string("--");
+    int value = (int)id(inverter_status_10_00_00).state;
+    switch(value) {
+      case 0: return std::string("Off");
+      case 1: return std::string("Running");
+      case 2: return std::string("Starting");
+      case 3: return std::string("Stopping");
+      default: return std::string("Unknown (").append(to_string(value)).append(")");
+    }
+  update_interval: 1s
+- platform: template
+  name: Compressor Running Status
+  id: compressor_running_status_10_00_00_display
+  lambda: |-
+    if (std::isnan(id(compressor_running_status_10_00_00).state)) return std::string("--");
+    return id(compressor_running_status_10_00_00).state != 0 ? std::string("On") : std::string("Off");
+  update_interval: 1s
+- platform: template
+  name: Hot Gas Valve Status
+  id: hot_gas_valve_status_10_00_00_display
+  lambda: |-
+    if (std::isnan(id(hot_gas_valve_status_10_00_00).state)) return std::string("--");
+    return id(hot_gas_valve_status_10_00_00).state != 0 ? std::string("On") : std::string("Off");
+  update_interval: 1s
+- platform: template
+  name: Liquid Line Valve Status
+  id: liquid_line_valve_status_10_00_00_display
+  lambda: |-
+    if (std::isnan(id(liquid_line_valve_status_10_00_00).state)) return std::string("--");
+    return id(liquid_line_valve_status_10_00_00).state != 0 ? std::string("On") : std::string("Off");
+  update_interval: 1s
+- platform: template
+  name: 4-Way Reversing Valve Status
+  id: four_way_reversing_valve_status_10_00_00_display
+  lambda: |-
+    if (std::isnan(id(four_way_reversing_valve_status_10_00_00).state)) return std::string("--");
+    return id(four_way_reversing_valve_status_10_00_00).state != 0 ? std::string("On") : std::string("Off");
+  update_interval: 1s
+- platform: template
+  name: EVI Bypass Valve Status
+  id: evi_bypass_valve_status_10_00_00_display
+  lambda: |-
+    if (std::isnan(id(evi_bypass_valve_status_10_00_00).state)) return std::string("--");
+    return id(evi_bypass_valve_status_10_00_00).state != 0 ? std::string("On") : std::string("Off");
+  update_interval: 1s
+- platform: template
+  name: Base Pan Heater
+  id: base_pan_heater_10_00_00_display
+  lambda: |-
+    if (std::isnan(id(base_pan_heater_10_00_00).state)) return std::string("--");
+    return id(base_pan_heater_10_00_00).state != 0 ? std::string("On") : std::string("Off");
+  update_interval: 1s
+- platform: template
+  name: PHE Heater
+  id: phe_heater_10_00_00_display
+  lambda: |-
+    if (std::isnan(id(phe_heater_10_00_00).state)) return std::string("--");
+    return id(phe_heater_10_00_00).state != 0 ? std::string("On") : std::string("Off");
+  update_interval: 1s
+- platform: template
+  name: Backup Heater Status
+  id: dhw_backup_heater_status_display
+  lambda: |-
+    if (std::isnan(id(dhw_backup_heater_status).state)) return std::string("--");
+    return id(dhw_backup_heater_status).state != 0 ? std::string("On") : std::string("Off");
+  update_interval: 1s
+- platform: template
+  name: Booster Heater Status
+  id: dhw_booster_heater_status_display
+  lambda: |-
+    if (std::isnan(id(dhw_booster_heater_status).state)) return std::string("--");
+    return id(dhw_booster_heater_status).state != 0 ? std::string("On") : std::string("Off");
+  update_interval: 1s
+sensor:
+- platform: template
+  name: Heat Output (Calculated)
+  id: heat_output_calculated
+  unit_of_measurement: W
+  device_class: power
+  state_class: measurement
+  accuracy_decimals: 0
+  update_interval: 30s
+  lambda: |-
+    float f = id(water_flow_rate_20_00_00).state;
+    float t_out = id(water_out_temp_4238).state;
+    float t_ret = id(water_return_temp_20_00_00).state;
+    if (std::isnan(f) || std::isnan(t_out) || std::isnan(t_ret)) return {};
+    // 4.186 kJ/kg.K, 1 L/min = 1/60 kg/s
+    return f * (t_out - t_ret) * 69.77f;
+- platform: template
+  name: Lifetime COP
+  id: lifetime_cop
+  accuracy_decimals: 2
+  state_class: measurement
+  update_interval: 300s
+  lambda: |-
+    float heat = id(total_energy_produced_20_00_00).state;
+    float elec = id(energy_accumulated_10_00_00).state;
+    if (std::isnan(heat) || std::isnan(elec) || elec <= 0) return {};
+    return heat / elec;
+- platform: template
+  name: Instantaneous COP
+  id: instantaneous_cop
+  accuracy_decimals: 2
+  state_class: measurement
+  update_interval: 30s
+  lambda: |-
+    float heat = id(heat_output_20_00_00).state;
+    float elec = id(outdoor_unit_power_10_00_00).state;
+    if (std::isnan(heat) || std::isnan(elec) || elec < 200) return {};
+    return heat / elec;
