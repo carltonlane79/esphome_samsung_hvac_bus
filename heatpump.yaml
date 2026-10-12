@@ -50,10 +50,6 @@ samsung_ac:
     climate:
       name: Heat Pump climate
       id: climate_20_00_00
-    room_temperature:
-      name: Indoor Temperature
-      id: room_temperature_20_00_00
-      accuracy_decimals: 1
     target_temperature:
       name: Heat Pump target temperature
       id: target_temperature_20_00_00
@@ -67,24 +63,28 @@ samsung_ac:
       name: Evaporator Inlet Water Temperature
       id: evap_inlet_water_temperature_20_00_00
       accuracy_decimals: 1
+      filters:
+      - lambda: if (x <= -50) return {}; return x;
     indoor_eva_out_temperature:
       name: Evaporator Outlet Water Temperature
       id: evap_outlet_water_temperature_20_00_00
       accuracy_decimals: 1
+      filters:
+      - lambda: if (x <= -50) return {}; return x;
     custom_sensor:
     - name: Operation Mode
       message: 0x4001
       id: operation_mode_20_00_00
       internal: true
-    - name: Water Temperature (Heating Loop)
-      message: 0x4236
-      id: water_temperature_20_00_00
+    - name: Indoor Temperature
+      message: 0x4203
+      id: room_temperature_20_00_00
       unit_of_measurement: °C
       accuracy_decimals: 1
       device_class: temperature
       state_class: measurement
       filters:
-      - lambda: return (int16_t)x;
+      - lambda: int16_t v = (int16_t) x; if (v <= -500) return {}; return (float) v;
       - multiply: 0.1
     - name: Water Outlet Target Temperature
       message: 0x4247
@@ -92,7 +92,7 @@ samsung_ac:
       unit_of_measurement: °C
       accuracy_decimals: 1
       filters:
-      - lambda: return (int16_t)x;
+      - lambda: int16_t v = (int16_t) x; if (v <= -500) return {}; return (float) v;
       - multiply: 0.1
     - name: DHW Operation Enable
       message: 0x4065
@@ -110,7 +110,7 @@ samsung_ac:
       state_class: measurement
       id: dhw_setpoint_temp
       filters:
-      - lambda: return (int16_t)x;
+      - lambda: int16_t v = (int16_t) x; if (v <= -500) return {}; return (float) v;
       - multiply: 0.1
     - name: Backup Heater Status
       message: 0x406C
@@ -136,7 +136,7 @@ samsung_ac:
       state_class: measurement
       id: water_out_temp_4238
       filters:
-      - lambda: return (int16_t)x;
+      - lambda: int16_t v = (int16_t) x; if (v <= -500) return {}; return (float) v;
       - multiply: 0.1
     - name: Heater Out Temperature
       message: 0x4239
@@ -146,7 +146,7 @@ samsung_ac:
       state_class: measurement
       id: water_out2_temp_4239
       filters:
-      - lambda: return (int16_t)x;
+      - lambda: int16_t v = (int16_t) x; if (v <= -500) return {}; return (float) v;
       - multiply: 0.1
     - name: DHW Tank Temperature
       message: 0x4237
@@ -156,7 +156,7 @@ samsung_ac:
       device_class: temperature
       state_class: measurement
       filters:
-      - lambda: return (int16_t)x;
+      - lambda: int16_t v = (int16_t) x; if (v <= -500) return {}; return (float) v;
       - multiply: 0.1
     - name: Water Flow Rate
       message: 0x42E9
@@ -171,7 +171,7 @@ samsung_ac:
       unit_of_measurement: °C
       accuracy_decimals: 1
       filters:
-      - lambda: return (int16_t)x;
+      - lambda: int16_t v = (int16_t) x; if (v <= -500) return {}; return (float) v;
       - multiply: 0.1
     - name: Zone 2 Water Setpoint
       message: 0x42D7
@@ -179,7 +179,7 @@ samsung_ac:
       unit_of_measurement: °C
       accuracy_decimals: 1
       filters:
-      - lambda: return (int16_t)x;
+      - lambda: int16_t v = (int16_t) x; if (v <= -500) return {}; return (float) v;
       - multiply: 0.1
     - name: Water Outlet Zone 1
       message: 0x42D8
@@ -187,7 +187,7 @@ samsung_ac:
       unit_of_measurement: °C
       accuracy_decimals: 1
       filters:
-      - lambda: return (int16_t)x;
+      - lambda: int16_t v = (int16_t) x; if (v <= -500) return {}; return (float) v;
       - multiply: 0.1
     - name: Water Outlet Zone 2
       message: 0x42D9
@@ -195,7 +195,7 @@ samsung_ac:
       unit_of_measurement: °C
       accuracy_decimals: 1
       filters:
-      - lambda: return (int16_t)x;
+      - lambda: int16_t v = (int16_t) x; if (v <= -500) return {}; return (float) v;
       - multiply: 0.1
     - name: Flow Rate Control %
       message: 0x42F1
@@ -209,7 +209,7 @@ samsung_ac:
       device_class: temperature
       state_class: measurement
       filters:
-      - lambda: return (int16_t)x;
+      - lambda: int16_t v = (int16_t) x; if (v <= -500) return {}; return (float) v;
       - multiply: 0.1
     - name: Indoor Thermal Energy Total
       message: 0x4427
@@ -229,7 +229,7 @@ samsung_ac:
       device_class: temperature
       state_class: measurement
       filters:
-      - lambda: return (int16_t)x;
+      - lambda: int16_t v = (int16_t) x; if (v <= -500) return {}; return (float) v;
       - multiply: 0.1
     - name: Indoor Unit Capacity
       message: 0x4212
@@ -402,7 +402,7 @@ samsung_ac:
       id: outdoor_air_sensor_10_00_00
       unit_of_measurement: °C
       filters:
-      - lambda: return (int16_t)x;
+      - lambda: int16_t v = (int16_t) x; if (v <= -500) return {}; return (float) v;
       - multiply: 0.1
     - name: Defrost Mode
       id: defrost_mode_10_00_00
@@ -556,7 +556,7 @@ samsung_ac:
       device_class: temperature
       state_class: measurement
       filters:
-      - lambda: return (int16_t)x;
+      - lambda: int16_t v = (int16_t) x; if (v <= -500) return {}; return (float) v;
       - multiply: 0.1
     - name: Compressor Current
       message: 0x8217
@@ -573,7 +573,7 @@ samsung_ac:
       unit_of_measurement: °C
       accuracy_decimals: 1
       filters:
-      - lambda: return (int16_t)x;
+      - lambda: int16_t v = (int16_t) x; if (v <= -500) return {}; return (float) v;
       - multiply: 0.1
     - name: Suction Temperature
       message: 0x821A
@@ -583,7 +583,7 @@ samsung_ac:
       device_class: temperature
       state_class: measurement
       filters:
-      - lambda: return (int16_t)x;
+      - lambda: int16_t v = (int16_t) x; if (v <= -500) return {}; return (float) v;
       - multiply: 0.1
     - name: EVI Inlet Temperature
       message: 0x821E
@@ -591,7 +591,7 @@ samsung_ac:
       unit_of_measurement: °C
       accuracy_decimals: 1
       filters:
-      - lambda: return (int16_t)x;
+      - lambda: int16_t v = (int16_t) x; if (v <= -500) return {}; return (float) v;
       - multiply: 0.1
     - name: EVI Outlet Temperature
       message: 0x8220
@@ -599,7 +599,7 @@ samsung_ac:
       unit_of_measurement: °C
       accuracy_decimals: 1
       filters:
-      - lambda: return (int16_t)x;
+      - lambda: int16_t v = (int16_t) x; if (v <= -500) return {}; return (float) v;
       - multiply: 0.1
     - name: Outdoor Fan Step
       message: 0x8226
@@ -622,7 +622,7 @@ samsung_ac:
       device_class: temperature
       state_class: measurement
       filters:
-      - lambda: return (int16_t)x;
+      - lambda: int16_t v = (int16_t) x; if (v <= -500) return {}; return (float) v;
       - multiply: 0.1
     - name: Low-Pressure Sat. Temperature
       message: 0x82A0
@@ -632,7 +632,7 @@ samsung_ac:
       device_class: temperature
       state_class: measurement
       filters:
-      - lambda: return (int16_t)x;
+      - lambda: int16_t v = (int16_t) x; if (v <= -500) return {}; return (float) v;
       - multiply: 0.1
     - name: All Units Total Power
       message: 0x8415
@@ -933,6 +933,10 @@ text_sensor:
     return id(dhw_booster_heater_status).state != 0 ? std::string("On") : std::string("Off");
   update_interval: 1s
 sensor:
+- platform: copy
+  source_id: water_return_temp_20_00_00
+  name: Water Temperature (Heating Loop)
+  id: water_temperature_20_00_00
 - platform: template
   name: Heat Output (Calculated)
   id: heat_output_calculated
