@@ -950,8 +950,10 @@ sensor:
     float t_out = id(water_out_temp_4238).state;
     float t_ret = id(water_return_temp_20_00_00).state;
     if (std::isnan(f) || std::isnan(t_out) || std::isnan(t_ret)) return {};
+    // no flow: the sensors drift and the difference means nothing
+    if (f < 2.0f) return 0.0f;
     // 4.186 kJ/kg.K, 1 L/min = 1/60 kg/s
-    return f * (t_out - t_ret) * 69.77f;
+    return std::max(0.0f, f * (t_out - t_ret) * 69.77f);
 - platform: template
   name: Lifetime COP
   id: lifetime_cop
