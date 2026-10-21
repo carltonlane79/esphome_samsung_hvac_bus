@@ -56,7 +56,11 @@ Samsung_AC_Number = samsung_ac.class_("Samsung_AC_Number", number.Number)
 Samsung_AC_Climate = samsung_ac.class_("Samsung_AC_Climate", climate.Climate)
 
 # not sure why select.select_schema did not work yet
-SELECT_MODE_SCHEMA = select.select_schema(Samsung_AC_Mode_Select)
+ALL_MODES = ["Auto", "Cool", "Dry", "Fan", "Heat"]
+CONF_MODE_OPTIONS = "options"
+SELECT_MODE_SCHEMA = select.select_schema(Samsung_AC_Mode_Select).extend(
+    {cv.Optional(CONF_MODE_OPTIONS): cv.ensure_list(cv.one_of(*ALL_MODES))}
+)
 SELECT_WATER_HEATER_MODE_SCHEMA = select.select_schema(
     Samsung_AC_Water_Heater_Mode_Select
 )
@@ -596,7 +600,7 @@ async def to_code(config):
 
         if CONF_DEVICE_MODE in device:
             conf = device[CONF_DEVICE_MODE]
-            values = ["Auto", "Cool", "Dry", "Fan", "Heat"]
+            values = conf.get(CONF_MODE_OPTIONS, ALL_MODES)
             sel = await select.new_select(conf, options=values)
             cg.add(var_dev.set_mode_select(sel))
 

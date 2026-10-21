@@ -59,6 +59,17 @@ samsung_ac:
     mode:
       name: Heat Pump mode
       id: mode_20_00_00
+      # Cool/Dry/Fan left out: cooling through UFH and radiators risks condensation
+      options: [Heat, Auto]
+    water_heater_power:
+      name: Hot Water Power
+      id: water_heater_power_20_00_00
+    water_heater_mode:
+      name: Hot Water Mode
+      id: water_heater_mode_20_00_00
+    water_target_temperature:
+      name: Hot Water Target Temperature
+      id: water_target_temperature_20_00_00
     indoor_eva_in_temperature:
       name: Evaporator Inlet Water Temperature
       id: evap_inlet_water_temperature_20_00_00
